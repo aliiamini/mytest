@@ -1,0 +1,85 @@
+---
+title: "GAM"
+format: html
+editor: visual
+---
+
+## GAM
+
+Generalized Additive Models (GAMs) are a type of regression model that allow for non-linear relationships between predictor variables and the response variable. GAMs extend the linear model by adding a set of non-parametric functions of the predictor variables.
+
+The backfitting algorithm is a computationally efficient method for fitting generalized additive models (GAMs). The basic idea of the backfitting algorithm is to **estimate each component of the additive predictor separately while holding the others fixed**. The estimation of each component is performed iteratively, and at each iteration, the residuals from the current estimate of the model are used to update the estimation of the component.
+
+More specifically, given the additive predictor:
+
+��=�1(��1)+�2(��2)+⋯+��(���)ηi​=f1​(xi1​)+f2​(xi2​)+⋯+fp​(xip​)
+
+where \$\\eta_i\$ is the linear predictor for the \$i\$th observation, and \$f_j\$ is the smooth function of the \$j\$th predictor variable \$x\_{ij}\$.
+
+The backfitting algorithm can be summarized as follows:
+
+1.  Initialize each component \$f_j\$ with some reasonable starting value.
+
+2.  For each component \$f_j\$, hold all other components fixed and use weighted least squares to fit a linear regression of the residuals on \$f_j\$ and the other covariates.
+
+3.  Update each component \$f_j\$ by fitting a smooth curve to the residuals from the current model estimate using some smoothing method, such as a regression spline or a smoothing spline.
+
+4.  Iterate steps 2 and 3 until convergence.
+
+The backfitting algorithm provides a computationally efficient way to fit GAMs, especially when the number of predictor variables is large.
+
+The **`Boston`** dataset contains information on housing values and various neighborhood-level variables in Boston. We can use this data to fit a GAM that predicts housing values based on some of these variables. For simplicity, let's use only two variables: **`rm`** (average number of rooms per dwelling) and **`lstat`** (percent of the population considered lower status)
+
+Next, we can fit a GAM using the **`gam()`** function in the **`mgcv`** package:
+
+```{r}
+install.packages("MASS")
+library(MASS)
+library(mgcv)
+
+fit <- gam(medv ~ s(rm) + s(lstat), data = Boston)
+
+summary(fit)
+
+
+
+```
+
+In this code, we are using the **`gam()`** function to fit a GAM that predicts the **`medv`** variable (median value of owner-occupied homes in \$1000s) based on the **`rm`** and **`lstat`** variables. We are using the **`s()`** function to specify that we want to use cubic regression splines to model the relationships between each predictor variable and the response. The **`data`** argument specifies that we want to use the **`Boston`** dataset as our data source.
+
+
+These plots show the fitted curves for **`rm`** and **`lstat`**, respectively, along with their confidence intervals.
+
+```{r}
+plot(fit, select = 1)
+plot(fit, select = 2)
+
+
+```
+
+## Spline 
+
+In statistics, a spline is a flexible function that is used to approximate or interpolate data. Spline functions are piecewise polynomial functions that are defined by a set of control points or knots.
+
+The basic idea behind spline functions is to approximate a complicated curve by dividing it into simpler pieces and fitting a polynomial function to each piece. The polynomial functions are then stitched together at the knots to create a continuous and smooth curve. The **number and placemen**t of the knots, as well as the **degree** of the polynomial functions, can be adjusted to control the smoothness and complexity of the curve.
+
+There are several types of spline functions, including **linear splines**, cubic splines, and **natural splines**. Linear splines use a series of straight-line segments to approximate the curve, while cubic splines use cubic polynomial functions. **Natural spline**s are a type of **cubic spline** that impose additional constraints on the function to make it smoother and more natural-looking.
+
+Spline functions are commonly used in regression analysis and other statistical modeling applications to capture non-linear relationships between variables. For example, in a GAM (generalized additive model), spline functions can be used to model the relationship between a response variable and one or more predictor variables.
+
+```{r}
+
+
+par(mfrow = c(1,2))
+plot(fit, se = TRUE, col = "red", main = "Linear spline")
+plot(fit1, se = TRUE, col = "blue", main = "Natural spline")
+
+```
+
+The connection between Hierarchical Generalized Linear Models (HGLMs) and Generalized Additive Models (GAMs) is indeed deep, both conceptually and mathematically. Verbyla et al. (1999) highlighted this connection by demonstrating how both HGLMs and GAMs utilize a similar principle of **"pooling" parameter estimates and penalizing squared deviations to fit highly variable models.**
+
+In the context of HGLMs, the pooling of parameter estimates occurs at the group level, where **group-level effects are pulled towards global effects. This is achieved by penalizing the squared differences between each group-level parameter estimate and the global effect**. The aim is to strike a balance between individual group-specific effects and the overall global effect, allowing for both heterogeneity and commonality among the groups.
+
+On the other hand, GAMs enforce a **smoothness criterion on the variability of a functional relationship. The smoothness criterion pulls the parameters towards a specified smooth function, often assumed to be totally smooth (e.g., a straight line). This is achieved by penalizing squared deviations from the assumed smooth function**. By imposing this penalty, GAMs aim to find a compromise between capturing the underlying smooth trend and allowing for local variability.
+
+Both HGLMs and GAMs leverage the idea of **penalizing squared deviations to balance complex,** highly variable models. HGLMs achieve this by pulling group-level effects towards global effects, while GAMs accomplish it by enforcing a smoothness criterion on the functional relationship. These approaches allow for flexible modeling that captures both heterogeneity and common patterns in the data.
